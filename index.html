@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CodeSnap — Beautiful Code Screenshots</title>
+<meta name="description" content="Create beautiful code screenshots for social media. Syntax highlighting, themes, window frames. No signup.">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/dracula.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0d1117;color:#e6edf3;min-height:100vh}
+.container{max-width:900px;margin:0 auto;padding:20px}
+h1{font-size:1.8rem;background:linear-gradient(135deg,#f0883e,#ff6b35);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px}
+.subtitle{color:#8b949e;font-size:.9rem;margin-bottom:24px}
+.editor-panel{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:700px){.editor-panel{grid-template-columns:1fr}}
+.panel{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:16px}
+.panel h3{font-size:.85rem;color:#8b949e;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px}
+textarea{width:100%;min-height:250px;background:#0d1117;color:#e6edf3;border:1px solid #30363d;border-radius:6px;padding:12px;font-family:'JetBrains Mono','Fira Code',monospace;font-size:13px;line-height:1.5;resize:vertical}
+select,button{padding:8px 16px;border-radius:6px;font-size:.85rem;cursor:pointer}
+select{background:#0d1117;color:#e6edf3;border:1px solid #30363d;margin-right:8px;margin-top:8px}
+button{background:#f0883e;color:#fff;border:none;font-weight:600}
+button:hover{background:#ff6b35}
+.controls{margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.controls select, .controls button{margin-top:0}
+.preview-section{margin-top:24px}
+#preview-container{background:#161b22;border:1px solid #30363d;border-radius:12px;overflow:hidden;position:relative}
+.window-header{display:flex;align-items:center;padding:10px 14px;background:#0d1117;border-bottom:1px solid #30363d;gap:8px}
+.window-dot{width:12px;height:12px;border-radius:50%}
+.window-dot:nth-child(1){background:#ff5f56}
+.window-dot:nth-child(2){background:#ffbd2e}
+.window-dot:nth-child(3){background:#27c93f}
+.window-title{flex:1;text-align:center;color:#8b949e;font-size:.75rem;font-family:'JetBrains Mono',monospace}
+#preview-code{padding:20px;overflow-x:auto;min-height:100px}
+#preview-code pre{margin:0}
+#preview-code code{font-family:'JetBrains Mono','Fira Code',monospace;font-size:13px;line-height:1.6}
+.watermark{text-align:center;padding:6px;color:#484f58;font-size:.65rem;font-family:'JetBrains Mono',monospace;background:#0d1117;border-top:1px solid #30363d}
+#export-png{margin-top:12px}
+.premium-modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.85);z-index:100;align-items:center;justify-content:center}
+.premium-modal.active{display:flex}
+.modal-content{background:#161b22;border:1px solid #30363d;border-radius:12px;padding:32px;max-width:420px;width:90%}
+.modal-content h2{color:#f0883e;margin-bottom:12px}
+.modal-content ul{list-style:none;margin:16px 0}
+.modal-content li{padding:6px 0;color:#8b949e}
+.modal-content li::before{content:'✓ ';color:#3fb950}
+.modal-buttons{display:flex;gap:12px;margin-top:20px}
+.stripe-btn{display:inline-block;background:#635bff;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;text-align:center;flex:1}
+.btn-secondary{background:#21262d;color:#e6edf3;border:1px solid #30363d;padding:12px 24px;border-radius:8px;cursor:pointer;flex:1;text-align:center}
+.toast{position:fixed;bottom:20px;right:20px;background:#238636;color:#fff;padding:12px 24px;border-radius:8px;z-index:200;display:none}
+.toast.show{display:block;animation:fadeIn .3s}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>⚡ CodeSnap</h1>
+<p class="subtitle">Create beautiful code screenshots for social media. No signup.</p>
+
+<div class="editor-panel">
+<div class="panel">
+<h3>Your Code</h3>
+<textarea id="code-input" placeholder="Paste your code here...">function fibonacci(n) {
+  if (n <= 1) return n;
+  return fibonacci(n - 1) + fibonacci(n - 2);
+}
+
+console.log(fibonacci(10)); // 55</textarea>
+<div class="controls">
+<select id="lang-select">
+<option value="javascript">JavaScript</option>
+<option value="python">Python</option>
+<option value="typescript">TypeScript</option>
+<option value="rust">Rust</option>
+<option value="go">Go</option>
+<option value="css">CSS</option>
+<option value="html">HTML</option>
+<option value="json">JSON</option>
+<option value="sql">SQL</option>
+<option value="bash">Bash</option>
+<option value="ruby">Ruby</option>
+<option value="cpp">C++</option>
+</select>
+<select id="theme-select" onchange="changeTheme()">
+<option value="dracula">Dracula</option>
+<option value="monokai">Monokai</option>
+<option value="nord">Nord</option>
+<option value="github-dark">GitHub Dark</option>
+<option value="one-dark">One Dark</option>
+</select>
+</div>
+</div>
+
+<div class="panel">
+<h3>Window Style</h3>
+<select id="window-style" onchange="updatePreview()">
+<option value="macos">macOS Dots</option>
+<option value="windows">Windows</option>
+<option value="plain">Plain</option>
+</select>
+<h3 style="margin-top:16px">File Name</h3>
+<input type="text" id="filename-input" value="example.js" oninput="updatePreview()" style="width:100%;padding:8px;background:#0d1117;color:#e6edf3;border:1px solid #30363d;border-radius:6px;font-family:JetBrains Mono,monospace;font-size:13px">
+</div>
+</div>
+
+<div class="preview-section">
+<div id="preview-container">
+<div class="window-header" id="window-header">
+<div id="dots-container">
+<div class="window-dot"></div><div class="window-dot"></div><div class="window-dot"></div>
+</div>
+<div class="window-title" id="window-title">example.js</div>
+</div>
+<div id="preview-code"><pre><code id="highlighted-code" class="language-javascript"></code></pre></div>
+<div class="watermark" id="watermark">Made with CodeSnap · rumblingb.github.io/codesnap</div>
+</div>
+<button id="export-png" onclick="exportPNG()">📸 Export as PNG</button>
+<button style="background:#21262d;border:1px solid #30363d;margin-left:8px" onclick="copyToClipboard()">📋 Copy Image</button>
+<button style="background:#21262d;border:1px solid #30363d;margin-left:8px" onclick="openPremium()">⭐ Upgrade ($9)</button>
+</div>
+</div>
+
+<div class="premium-modal" id="premium-modal">
+<div class="modal-content">
+<h2>⚡ CodeSnap Premium</h2>
+<p style="color:#8b949e">One-time $9 — no subscription</p>
+<ul>
+<li>Remove watermark</li>
+<li>15 themes (vs 5 free)</li>
+<li>Custom background colors</li>
+<li>Export custom sizes</li>
+<li>SVG export</li>
+<li>Priority support</li>
+</ul>
+<div class="modal-buttons">
+<a href="https://buy.stripe.com/PLACEHOLDER_CODESNAP" class="stripe-btn" target="_blank">Pay $9 with Stripe</a>
+<button class="btn-secondary" onclick="closePremium()">Maybe Later</button>
+</div>
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script>
+const themeStyles = {
+dracula:'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/dracula.min.css',
+monokai:'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/monokai.min.css',
+nord:'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/nord.min.css',
+'github-dark':'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css',
+'one-dark':'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css'
+};
+let currentTheme='dracula';
+
+function updatePreview(){
+const code=document.getElementById('code-input').value;
+const lang=document.getElementById('lang-select').value;
+const codeEl=document.getElementById('highlighted-code');
+codeEl.className=`language-${lang}`;
+codeEl.textContent=code;
+hljs.highlightElement(codeEl);
+document.getElementById('window-title').textContent=document.getElementById('filename-input').value;
+const style=document.getElementById('window-style').value;
+const dots=document.getElementById('dots-container');
+if(style==='windows')dots.innerHTML='<span style="color:#8b949e;font-size:14px">— □ ✕</span>';
+else if(style==='plain')dots.innerHTML='';
+else dots.innerHTML='<div class="window-dot" style="background:#ff5f56"></div><div class="window-dot" style="background:#ffbd2e"></div><div class="window-dot" style="background:#27c93f"></div>';
+localStorage.setItem('codesnap_code',code);
+localStorage.setItem('codesnap_lang',lang);
+}
+function changeTheme(){
+currentTheme=document.getElementById('theme-select').value;
+document.querySelector('link[rel=stylesheet][href*="highlight.js"]').href=themeStyles[currentTheme];
+setTimeout(updatePreview,100);
+}
+async function exportPNG(){
+const el=document.getElementById('preview-container');
+const canvas=await html2canvas(el,{backgroundColor:'#161b22',scale:2});
+canvas.toBlob(b=>{
+const url=URL.createObjectURL(b);
+const a=document.createElement('a');
+a.href=url;a.download='codesnap.png';a.click();
+showToast('PNG exported!');
+});
+}
+async function copyToClipboard(){
+const el=document.getElementById('preview-container');
+const canvas=await html2canvas(el,{backgroundColor:'#161b22',scale:2});
+canvas.toBlob(async b=>{
+await navigator.clipboard.write([new ClipboardItem({'image/png':b})]);
+showToast('Copied to clipboard!');
+});
+}
+function openPremium(){document.getElementById('premium-modal').classList.add('active')}
+function closePremium(){document.getElementById('premium-modal').classList.remove('active')}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000)}
+document.getElementById('code-input').addEventListener('input',updatePreview);
+document.getElementById('lang-select').addEventListener('change',updatePreview);
+// Load saved
+const saved=localStorage.getItem('codesnap_code');
+if(saved)document.getElementById('code-input').value=saved;
+const savedLang=localStorage.getItem('codesnap_lang');
+if(savedLang)document.getElementById('lang-select').value=savedLang;
+updatePreview();
+</script>
+</body>
+</html>
